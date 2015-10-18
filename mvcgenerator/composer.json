@@ -1,6 +1,6 @@
 {
-    "name": "phpapi/mcvgenerator",
-    "description": "xyz",
+    "name": "Lonnemann/phpAPI",
+    "description": "MVC Generator for Laravel 5.1",
     "type": "console",
     "require": {
         "laravel/laravel": "5.1"
