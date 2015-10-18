@@ -2,15 +2,17 @@
     "name": "phpapi/mcvgenerator",
     "description": "MVC Generator for Laravel 5.1",
     "version":"1.0.0.0",
-    "type": "console",
+    "type": "library",
     "require": {
-        "laravel/laravel": "5.1"
+        //"laravel/laravel": "5.1"
     },
     "license": "MIT",
     "authors": [
         {
             "name": "Thomas Lonnemann",
-            "email": "lonnemann@dma.do"
+            "email": "lonnemann@dma.do",
+            "homepage": "http://www.phpapi.de",
+            "role": "Developer, Project Manager"
         }
     ]
 }
