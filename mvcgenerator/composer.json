@@ -1,0 +1,15 @@
+{
+    "name": "phpapi/mcvgenerator",
+    "description": "xyz",
+    "type": "console",
+    "require": {
+        "laravel/laravel": "5.1"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Thomas Lonnemann",
+            "email": "lonnemann@dma.do"
+        }
+    ]
+}
