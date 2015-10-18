@@ -13,5 +13,12 @@
             "homepage": "http://www.phpapi.de",
             "role": "Developer, Project Manager"
         }
-    ]
+    ],
+      "repositories": [
+    {
+      "type": "vcs",
+      "url":  "https://github.com/Lonnemann/phpAPI.git"
+    }
+  ],
+  "minimum-stability": "dev"
 }
