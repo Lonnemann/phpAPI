@@ -1,11 +1,9 @@
 {
     "name": "phpapi/mcvgenerator",
     "description": "MVC Generator for Laravel 5.1",
-    "version":"1.0.0",
-    "tags":"1.0.0-stable",
+    "tag":"1.0.0",
     "type": "library",
     "require": {
-        
     },
     "minimum-stability":"dev",
     "license": "MIT",
