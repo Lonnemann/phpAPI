@@ -1,6 +1,7 @@
 {
     "name": "phpapi/mcvgenerator",
     "description": "MVC Generator for Laravel 5.1",
+    "version":"1.0.0.0",
     "type": "console",
     "require": {
         "laravel/laravel": "5.1"
