@@ -68,6 +68,7 @@ class MVC extends Command
         
         //  Add a route to the Controller into the routes.php
         if (file_exists('app/Http/routes.php'))
+            if (!(strpos(file_get_contents('app/Http/routes.php'),"Route::resource('/".strtolower($name)."','".ucfirst($name)."Controller')")))
             if ($handle=fopen('app/Http/routes.php','a+'))
                 if (fwrite($handle,"\n"."Route::resource('/".strtolower($name)."','".ucfirst($name)."Controller');"))
                     if (fclose($handle))
@@ -87,7 +88,7 @@ class MVC extends Command
         {
             if (!(file_exists("resources/views/$name")))
                 mkdir("resources/views/$name");
-            $type="a+";
+            //$type="a+";
         }
             
         if ($handle=fopen($file,$type))
