@@ -8,7 +8,9 @@ Index
 <div class="container">
 	<div class="row">
 		<h1>Index</h1>
-		<a href="{{url('/::name/create')}}" >Add Item</a>
+		@if (!(Auth::guest()))
+			<a href="{{url('/::name/create')}}" >Add Item</a>
+		@endif
 		@if (\Session::has('flash_message'))
 		    <div class="alert alert-success">
 		        <span class="glyphicon glyphicon-ok-circle"></span> {{(\Session::get('flash_message'))}}

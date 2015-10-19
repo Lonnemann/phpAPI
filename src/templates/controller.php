@@ -20,7 +20,7 @@ class ::NameController extends Controller
      *  Allows this items fo,
      *  wheter they are logged in or not
      */
-    protected $publicAddEditAndDelete   =   true;
+    protected $publicAddEditAndDelete   =   false;
 
     /**
      *  Defines ownership column, 
@@ -112,7 +112,7 @@ class ::NameController extends Controller
         $model=::Name::find($id);
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() AND $this->requiresOwnership())
+        if ($this->requiresLoggedIn() AND $this->requiresOwnership($id))
             return response('Unauthorized.', 401);
         return view('::name.show',compact('model'));   
 
@@ -129,7 +129,7 @@ class ::NameController extends Controller
         $model=::Name::find($id);
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership() or ($this->requiresAuthorizedActions()))
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
 
         $columns= \Schema::getColumnListing($model->table);
@@ -162,7 +162,7 @@ class ::NameController extends Controller
         $model=::Name::find($id);
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership() or ($this->requiresAuthorizedActions()))
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
 
         foreach ($input as $key => $value) {
@@ -187,7 +187,7 @@ class ::NameController extends Controller
         $model=::Name::find($id);
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership() or ($this->requiresAuthorizedActions()))
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
         if ($model->delete())
             \Session::flash('flash_message',"Item successfully deleted.");
@@ -217,8 +217,8 @@ class ::NameController extends Controller
     public function requiresOwnership($ownership_id=null)
     {
         if ($ownership_id !==null)
-            if (Auth::user()->id == $ownership_id)
-                return false;
+            if (Auth::user()->id !== $ownership_id)
+                return true;
         return false;
     }
 

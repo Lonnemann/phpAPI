@@ -9,7 +9,9 @@ Show Item {{$model->id}}
 	<div class="row">
 		<h1>Show Item {{$model->id}}</h1>
 		<a href="{{url('/::name/')}}" >Back to index</a>
-		| <a href="{{url('::name/')}}/{{$model['attributes']['id']}}/edit">Edit</a>
+		@if (!(Auth::guest()))
+			| <a href="{{url('::name/')}}/{{$model['attributes']['id']}}/edit">Edit</a>
+		@endif
 		@if (\Session::has('flash_message'))
 		    <div class="alert alert-success">
 		      	<span class="glyphicon glyphicon-ok-circle"></span> {{(\Session::get('flash_message'))}}
