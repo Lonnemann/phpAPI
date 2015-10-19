@@ -1,5 +1,5 @@
 {
-    "name": "phpapi/mcvgenerator",
+    "name": "phpapi/mvcgenerator",
     "description": "MVC Generator for Laravel 5.1",
     "version":"1.0.0",
     "type": "library",
