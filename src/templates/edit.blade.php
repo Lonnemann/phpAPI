@@ -5,11 +5,11 @@ Edit Item {{$model->id}}
 @endsection
 
 @section('content')
-	<h1>Edit Item {{$model->id}}</h1>
-	<form action="{{url('/::name/'.$model['attributes']['id'])}}" method="post">
-	<input type="hidden" name="_token" value="{{ csrf_token() }}">
-	<input type="hidden" name="_method" value="patch">
-		<div class="container">
+	<div class="container">
+		<h1>Edit Item {{$model->id}}</h1>
+		<form action="{{url('/::name/'.$model['attributes']['id'])}}" method="post">
+		<input type="hidden" name="_token" value="{{ csrf_token() }}">
+		<input type="hidden" name="_method" value="patch">
             @if (count($errors) > 0)
                 <div class="alert alert-danger">
                     <strong>{!!trans('errors.errors_headline')!!}</strong><br><br>
@@ -34,7 +34,7 @@ Edit Item {{$model->id}}
 			<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 				<label for="submit">Submit</label>
 				<div class="form-group">
-					<input type="submit" class="form-control" id="submit" value="Submit" >
+					<button type="submit" id="submit" class="form-control btn btn-success">Submit</button>
 				</div>
 			</div>
 		
@@ -46,7 +46,7 @@ Edit Item {{$model->id}}
 		<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 				<label for="delete">Delete</label>
 				<div class="form-group">
-					<input class="form-control" type="submit" class="form-control" id="delete" value="Delete" >
+					<button type="submit" id="delete" class="form-control btn btn-danger">Delete</button>
 				</div>
 			</div>
 	</form>

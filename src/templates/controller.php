@@ -98,7 +98,7 @@ class ::NameController extends Controller
         //dd($input);
         if ($model->save())
             \Session::flash('flash_message',"Item successfully created.");
-        return $this->index();   
+        return redirect('::name');
     }
 
     /**
@@ -173,7 +173,7 @@ class ::NameController extends Controller
         //dd($input);
         if ($model->save())
             \Session::flash('flash_message',"Item successfully updated.");
-        return $this->show($id);   
+        return redirect('::name/'.$id);
     }
 
     /**
@@ -191,10 +191,8 @@ class ::NameController extends Controller
             return response('Unauthorized.', 401);
         if ($model->delete())
             \Session::flash('flash_message',"Item successfully deleted.");
-        return $this->index();   
-
-
-        //
+        return redirect('::name');
+        
     }
 
     /**
