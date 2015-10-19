@@ -19,7 +19,7 @@ Show Item {{$model->id}}
 	@foreach ($model['attributes'] as $column	=> $value)
 	<div class="row">
 			@if  (($column !=='id')&&($column !=='created_at')&&($column !=='updated_at'))
-			<div>{{$value}}</div>
+			<div mvc-element mvc-element-show ::name-element ::name-element-show>{{$value}}</div>
 			@endif
 	</div>
 	@endforeach

@@ -19,7 +19,7 @@ Index
 	<div class="row">
 		@foreach ($element['attributes'] as $column	=> $value)
 			@if  (($column !=='id')&&($column !=='created_at')&&($column !=='updated_at'))
-			<div><a href="{{url('::name/')}}/{{$element['attributes']['id']}}">{{$value}}</a></div>
+			<div  class="mvc-element mvc-element-index ::name-element ::name-element-index"><a href="{{url('::name/')}}/{{$element['attributes']['id']}}">{{$value}}</a></div>
 			@endif
 		@endforeach
 	</div>

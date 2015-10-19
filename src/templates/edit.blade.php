@@ -24,24 +24,33 @@ Edit Item {{$model->id}}
 			@foreach ($model['attributes'] as $column=>$value)
 				@if (($column !=='id')&&($column !=='created_at')&&($column !=='updated_at'))
 				<div class="col-xs-12 col-sm-6 col-sm-offset-3">
-
-					<input type="text" value="{{$value}}" name="{{$column}}" placeholder="Enter your {{$column}} here." />	
+					<label for="{{$column}}">Enter your {{$column}} here.</label>
+                    <div class="form-group">
+						<input class="form-control" type="text" value="{{$value}}" name="{{$column}}" id="{{$column}}"  placeholder="Enter your {{$column}} here." />	
+					</div>
 				</div>
 				@endif
 			@endforeach
 			<div class="col-xs-12 col-sm-6 col-sm-offset-3">
-				<input type="submit" value="Submit">
+				<label for="submit">Submit</label>
+				<div class="form-group">
+					<input type="submit" class="form-control" id="submit" value="Submit" >
+				</div>
 			</div>
-		</div>
+		
 	</form>
 
-	<form action="{{url('/::name/'.$model['attributes']['id'])}}" method="post">
+	<form action="{{url('/::name/'.$model['attributes']['id'])}}" method="post" class="form">
 		<input type="hidden" name="_token" value="{{ csrf_token() }}">
 		<input type="hidden" name="_method" value="delete">
 		<div class="col-xs-12 col-sm-6 col-sm-offset-3">
-			<input type="submit" value="Delete this item.">
-		</div>
+				<label for="delete">Delete</label>
+				<div class="form-group">
+					<input class="form-control" type="submit" class="form-control" id="delete" value="Delete" >
+				</div>
+			</div>
 	</form>
+	</div>
 @endsection
 
 @section('additional-scripts')
