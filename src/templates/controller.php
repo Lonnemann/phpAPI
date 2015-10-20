@@ -20,7 +20,7 @@ class ::NameController extends Controller
      *  Allows this items fo,
      *  wheter they are logged in or not
      */
-    protected $publicAddEditAndDelete   =   false;
+    protected $publicAddEditAndDelete   =   true;
 
     /**
      *  Defines ownership column, 
@@ -46,8 +46,10 @@ class ::NameController extends Controller
     public function index()
     {
         $models   =   ::Name::all();
-    
-        //dd($models);
+        
+        if ($this->requiresLoggedIn())
+            return response('Unauthorized.', 401);
+        
         return view('::name.index',compact('models'));
     }
 
@@ -60,11 +62,11 @@ class ::NameController extends Controller
     {
         $model= new ::Name();
 
-        //prepare model for form
-        if ($this->requiresLoggedIn() or $this->requiresOwnership() or ($this->requiresAuthorizedActions()))
+        if ($this->requiresLoggedIn() or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
+        
         $columns= \Schema::getColumnListing($model->table);
-        //dd($columns);        
+        
         foreach ($columns as $key=>$column) {
             if (!(in_array($column,$this->FormIgnore)))
                 if (($column !=='id')&&($column !=='created_at')&&($column !=='updated_at'))
@@ -88,16 +90,18 @@ class ::NameController extends Controller
 
         $input = \Input::all();
         $model= new ::Name();
-        if ($this->requiresLoggedIn() or $this->requiresOwnership() or ($this->requiresAuthorizedActions()))
+        
+        if ($this->requiresLoggedIn() or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
+        
         foreach ($input as $key => $value) {
             if  (($key !=='_token')&&($key !=='_method'))
                 $model->$key    =   $value;
         }     
-        //dd($model);
-        //dd($input);
+        
         if ($model->save())
             \Session::flash('flash_message',"Item successfully created.");
+        
         return redirect('::name');
     }
 
@@ -110,10 +114,16 @@ class ::NameController extends Controller
     public function show($id)
     {   
         $model=::Name::find($id);
+        
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() AND $this->requiresOwnership($id))
+        
+        $check  =  ($this->user_id)  ?   ($this->user_id)  :   (null);
+        $check  =  ($model->$check)  ?   ($model->$check)  :   (null);
+
+        if ($this->requiresLoggedIn() AND $this->requiresOwnership($check))
             return response('Unauthorized.', 401);
+        
         return view('::name.show',compact('model'));   
 
     }
@@ -127,9 +137,14 @@ class ::NameController extends Controller
     public function edit($id)
     {
         $model=::Name::find($id);
+        
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
+        
+        $check  =  ($this->user_id)  ?   ($this->user_id)  :   (null);
+        $check  =  ($model->$check)  ?   ($model->$check)  :   (null);
+
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
 
         $columns= \Schema::getColumnListing($model->table);
@@ -162,17 +177,21 @@ class ::NameController extends Controller
         $model=::Name::find($id);
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
+        
+        $check  =  ($this->user_id !==null)     ?   ($this->user_id)  :   (null);
+        $check  =  (($check)&&($model->$check)) ?   ($model->$check)  :   (null);
+       
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
 
         foreach ($input as $key => $value) {
             if  (($key !=='_token')&&($key !=='_method'))
                 $model->$key    =   $value;
         }     
-        //dd($model);
-        //dd($input);
+        
         if ($model->save())
             \Session::flash('flash_message',"Item successfully updated.");
+        
         return redirect('::name/'.$id);
     }
 
@@ -185,12 +204,18 @@ class ::NameController extends Controller
     public function destroy($id)
     {
         $model=::Name::find($id);
+
         if (!$model)
             return response('ID:'.$id.' not found', 404);
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($id) or ($this->requiresAuthorizedActions()))
-            return response('Unauthorized.', 401);
+        
+        $check  =  ($this->user_id !==null)     ?   ($this->user_id)  :   (null);
+        $check  =  (($check)&&($model->$check)) ?   ($model->$check)  :   (null);
+       
+        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
+               return response('Unauthorized.', 401);
         if ($model->delete())
             \Session::flash('flash_message',"Item successfully deleted.");
+        
         return redirect('::name');
         
     }
@@ -205,6 +230,7 @@ class ::NameController extends Controller
     {
         if (Auth::guest())
             return (!$this->publicToAll);
+        
         return false;
     }
 
@@ -217,15 +243,23 @@ class ::NameController extends Controller
     public function requiresOwnership($ownership_id=null)
     {
         if ($ownership_id !==null)
-            if (Auth::user()->id !== $ownership_id)
+            if (!(Auth::guest()))
+            {
+                if (Auth::user()->id !== $ownership_id)
+                    return true;
+            }
+            else
+            {
                 return true;
+            }
         return false;
     }
 
     public function requiresAuthorizedActions()
     {
-     if (Auth::guest())
+        if (Auth::guest())
             return (!$this->publicAddEditAndDelete);
+        
         return false;        
     }
 
