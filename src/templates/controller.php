@@ -118,8 +118,8 @@ class ::NameController extends Controller
         if (!$model)
             return response('ID:'.$id.' not found', 404);
         
-        $check  =  ($this->user_id)  ?   ($this->user_id)  :   (null);
-        $check  =  ($model->$check)  ?   ($model->$check)  :   (null);
+        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
+        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
 
         if ($this->requiresLoggedIn() AND $this->requiresOwnership($check))
             return response('Unauthorized.', 401);
@@ -141,10 +141,10 @@ class ::NameController extends Controller
         if (!$model)
             return response('ID:'.$id.' not found', 404);
         
-        $check  =  ($this->user_id)  ?   ($this->user_id)  :   (null);
-        $check  =  ($model->$check)  ?   ($model->$check)  :   (null);
+        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
+        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
 
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
+        if ($check=($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions())))
             return response('Unauthorized.', 401);
 
         $columns= \Schema::getColumnListing($model->table);
@@ -178,9 +178,9 @@ class ::NameController extends Controller
         if (!$model)
             return response('ID:'.$id.' not found', 404);
         
-        $check  =  ($this->user_id !==null)     ?   ($this->user_id)  :   (null);
-        $check  =  (($check)&&($model->$check)) ?   ($model->$check)  :   (null);
-       
+        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
+        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+
         if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
             return response('Unauthorized.', 401);
 
@@ -208,9 +208,9 @@ class ::NameController extends Controller
         if (!$model)
             return response('ID:'.$id.' not found', 404);
         
-        $check  =  ($this->user_id !==null)     ?   ($this->user_id)  :   (null);
-        $check  =  (($check)&&($model->$check)) ?   ($model->$check)  :   (null);
-       
+        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
+        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+
         if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
                return response('Unauthorized.', 401);
         if ($model->delete())
