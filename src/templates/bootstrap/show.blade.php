@@ -1,4 +1,4 @@
-@extends('::name.master')
+@extends('::master.master')
 
 @section('title')
 Show Item {{$model->id}}
@@ -9,7 +9,7 @@ Show Item {{$model->id}}
 	<div class="row">
 		<h1>Show Item {{$model->id}}</h1>
 		<a href="{{url('/::name/')}}" >Back to index</a>
-		@if (!(Auth::guest()))
+		@if ($allowed['action'])
 			| <a href="{{url('::name/')}}/{{$model['attributes']['id']}}/edit">Edit</a>
 		@endif
 		@if (\Session::has('flash_message'))

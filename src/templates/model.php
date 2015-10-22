@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ::Name extends Model
 {
     //
-    public $table       =   '::names';
+    public $table       =   '::table';
 
     /*
     public function belongsToAttribute()

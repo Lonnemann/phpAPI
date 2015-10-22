@@ -1,4 +1,4 @@
-@extends('::name.master')
+@extends('::master.master')
 
 @section('title')
 Edit Item {{$model->id}}

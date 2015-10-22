@@ -28,6 +28,12 @@ class ::NameController extends Controller
      */
     protected $user_id  =   null;
     
+    /**
+     *  Defines ownership is required for , 
+     *  show method. Will produce different index in the future
+     */
+    protected $isPrivate  =   ::private;
+    
     
     /**
      *  Model atttributes that will be ignored for, 
@@ -46,10 +52,17 @@ class ::NameController extends Controller
     public function index()
     {
         $models   =   ::Name::all();
-        
-        if ($this->requiresLoggedIn())
+
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,null)))) 
+        {
+            return $allowed;
+        }
+
+        if (! $allowed['view'])
+        {
             return response('Unauthorized.', 401);
-        
+        }
+                            
         return view('::name.index',compact('models'));
     }
 
@@ -61,10 +74,17 @@ class ::NameController extends Controller
     public function create()
     {
         $model= new ::Name();
-
-        if ($this->requiresLoggedIn() or ($this->requiresAuthorizedActions()))
-            return response('Unauthorized.', 401);
         
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,null)))) 
+        {
+            return $allowed;
+        }
+
+        if ((!$allowed['view']) || (!$allowed['action']))
+        {
+            return response('Unauthorized.', 401);
+        }
+
         $columns= \Schema::getColumnListing($model->table);
         
         foreach ($columns as $key=>$column) {
@@ -90,10 +110,17 @@ class ::NameController extends Controller
 
         $input = \Input::all();
         $model= new ::Name();
-        
-        if ($this->requiresLoggedIn() or ($this->requiresAuthorizedActions()))
+                
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,null,$model)))) 
+        {
+            return $allowed;
+        }
+
+        if ((!$allowed['view']) || (!$allowed['action']))
+        {
             return response('Unauthorized.', 401);
-        
+        }
+
         foreach ($input as $key => $value) {
             if  (($key !=='_token')&&($key !=='_method'))
                 $model->$key    =   $value;
@@ -114,16 +141,17 @@ class ::NameController extends Controller
     public function show($id)
     {   
         $model=::Name::find($id);
-        
-        if (!$model)
-            return response('ID:'.$id.' not found', 404);
-        
-        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
-        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+                        
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,$id,$model)))) 
+        {
+            return $allowed;
+        }
 
-        if ($this->requiresLoggedIn() AND $this->requiresOwnership($check))
+        if ((!$allowed['view']) AND (!$allowed['action']))
+        {
             return response('Unauthorized.', 401);
-        
+        }
+
         return view('::name.show',compact('model'));   
 
     }
@@ -137,15 +165,16 @@ class ::NameController extends Controller
     public function edit($id)
     {
         $model=::Name::find($id);
-        
-        if (!$model)
-            return response('ID:'.$id.' not found', 404);
-        
-        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
-        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+                
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,$id,$model)))) 
+        {
+            return $allowed;
+        }
 
-        if ($check=($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions())))
+        if ((!$allowed['view']) || (!$allowed['action']))
+        {
             return response('Unauthorized.', 401);
+        }
 
         $columns= \Schema::getColumnListing($model->table);
         
@@ -175,14 +204,16 @@ class ::NameController extends Controller
 
         $input  =   \Input::all();
         $model=::Name::find($id);
-        if (!$model)
-            return response('ID:'.$id.' not found', 404);
-        
-        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
-        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+                
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,$id,$model)))) 
+        {
+            return $allowed;
+        }
 
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
+        if ((!$allowed['view']) || (!$allowed['action']))
+        {
             return response('Unauthorized.', 401);
+        }
 
         foreach ($input as $key => $value) {
             if  (($key !=='_token')&&($key !=='_method'))
@@ -204,15 +235,17 @@ class ::NameController extends Controller
     public function destroy($id)
     {
         $model=::Name::find($id);
-
-        if (!$model)
-            return response('ID:'.$id.' not found', 404);
         
-        $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
-        $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+        if (!(is_array($allowed=$this->allowCurrrentAction(__FUNCTION__,$id,$model)))) 
+        {
+            return $allowed;
+        }
 
-        if ($this->requiresLoggedIn() or $this->requiresOwnership($check) or ($this->requiresAuthorizedActions()))
-               return response('Unauthorized.', 401);
+        if ((!$allowed['view']) || (!$allowed['action']))
+        {
+            return response('Unauthorized.', 401);
+        }
+
         if ($model->delete())
             \Session::flash('flash_message',"Item successfully deleted.");
         
@@ -263,4 +296,54 @@ class ::NameController extends Controller
         return false;        
     }
 
+    protected function allowCurrrentAction($functionName,$id=null,$model=null)
+    {
+        $check=null;
+        if (($functionName !== 'index')&&($functionName !== 'create')&&($functionName !== 'store'))
+        {
+            if (!$model)
+            {
+                return response('ID:'.$id.' not found', 404);
+            }
+
+            $check  =   (null != $this->user_id)                        ?   ($this->user_id)  :   (null);
+            $check  =  ((null != $check) && (null != $model->$check))   ?   ($model->$check)  :   (null);
+        }
+
+        $allowed = 
+        [
+            "view"  => (!($this->requiresLoggedIn())),
+            "action"  => true,
+            "owner"  => false,
+        ];
+
+        switch ($functionName)
+        {
+            case 'index' :
+                $allowed['action']  =   (! $this->requiresAuthorizedActions());
+            break;
+       
+            case 'show'  :    
+                
+                if ($this->isPrivate)
+                {
+                    $allowed['view']    =   !$this->requiresOwnership($check);
+                }
+
+                $allowed['action']  =   ( (!($this->requiresLoggedIn())) AND (!($this->requiresAuthorizedActions())) AND (!$this->requiresOwnership($check)));
+                $allowed['owner']   =   !$this->requiresOwnership($check);
+            break;
+
+            default :
+                $allowed['action']  =   ( ( (!$this->requiresLoggedIn()) AND (!$this->requiresAuthorizedActions()) ) AND (!($this->requiresOwnership($check))));
+                $allowed['owner']   =   !$this->requiresOwnership($check);
+            break;
+            
+        }
+        if ($allowed['view'] == false)
+        {
+            $allowed['action'] =  false;
+        }
+        return $allowed;
+   }
 }

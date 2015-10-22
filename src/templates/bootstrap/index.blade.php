@@ -1,4 +1,4 @@
-@extends('::name.master')
+@extends('::master.master')
 
 @section('title')
 Index
@@ -8,7 +8,7 @@ Index
 <div class="container">
 	<div class="row">
 		<h1>Index</h1>
-		@if (!(Auth::guest()))
+		@if ($allowed['action'])
 			<a href="{{url('/::name/create')}}" >Add Item</a>
 		@endif
 		@if (\Session::has('flash_message'))
