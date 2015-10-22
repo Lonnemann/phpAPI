@@ -9,7 +9,7 @@ class MVC extends Command
      *
      * @var string
      */
-    protected $signature = 'make:mvc {name} {--foundation} {--bootstrap} {--override} {--table=false} {--private}';
+    protected $signature = 'make:mvc {name} {--foundation} {--bootstrap} {--override} {--table=false} {--private} {--master}';
 
     /**
      * The console command description.
@@ -124,7 +124,7 @@ class MVC extends Command
             $newContent = file_get_contents(str_replace("::engine", $this->templateEngine, $template));  
             $newContent = str_replace('::table',strtolower( ($this->option('table') !=="false") ? ($this->option('table')) : ('::names')),$newContent);
             $newContent = str_replace('::private',strtolower( ($this->option('private') !==false) ? ('true') : ('false')),$newContent);
-            $newContent = str_replace('::master',strtolower( ($this->option('master') !=="false") ? ($this->option('table')) : ('::name')),$newContent);
+            $newContent = str_replace('::master',strtolower( ($this->option('master') !==false) ? ($this->option('master')) : ('::name')),$newContent);
             $newContent = str_replace('::name',strtolower($name),$newContent);
             $newContent = str_replace('::Name',ucfirst($name),$newContent);
 
