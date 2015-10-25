@@ -1,4 +1,4 @@
-@extends('::master.master')
+@extends('::master')
 
 @section('title')
 Show Item {{$model->id}}

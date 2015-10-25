@@ -1,7 +1,8 @@
 <?php namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-
+use File;
+use Config;
 class MVC extends Command
 {
     /**
@@ -82,11 +83,15 @@ class MVC extends Command
 
     public function handle()
     {
+        $this->checkFiles();
         $this->setVariables();
         
         //create migration // FILTER
-        
-        $this->call('make:migration' ,['name' => "create_".$this->table."_table",'--create' => $this->table]);
+
+        if ($this->migration    || ($this->reset == true))
+        {        
+            $this->call('make:migration' ,['name' => "create_".$this->table."_table",'--create' => $this->table]);
+        }
 
 
         // write Templates
@@ -96,30 +101,23 @@ class MVC extends Command
         }
         
         //  Add a route to the Controller into the routes.php
-        if (file_exists('app/Http/routes.php'))
+        if (File::exists('app/Http/routes.php'))
         {
-            if (!(strpos(file_get_contents('app/Http/routes.php'),"Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller')")))
+            if (!(strpos(File::get('app/Http/routes.php'),"Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller')")))
             {
-                if ($handle=fopen('app/Http/routes.php','a+'))
+                if (File::append('app/Http/routes.php',"\n"."Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller');"))
                 {
-                    if (fwrite($handle,"\n"."Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller');"))
-                    {
-                        if (fclose($handle))
-                        {
-                            $this->info("Added path to routes.php");
-                        }
-                    }
-                }
+                    $this->info("Added path to routes.php");
+                }        
             }
         }
     }
 
     protected function rewriteFile($name,$file,$template,$type = 'w')
     {    
-        if (file_exists($template))
+        if (File::exists($template))
         {    
-            
-            $newContent = file_get_contents(str_replace("::engine", $this->templateEngine, $template));  
+            $newContent = File::get(str_replace("::engine", $this->templateEngine, $template));  
             $newContent = str_replace('::table',    $this->table,               $newContent);
             $newContent = str_replace('::private',  $this->private,             $newContent);
             $newContent = str_replace('::master',   $this->master,              $newContent);
@@ -128,30 +126,22 @@ class MVC extends Command
             
             if (strpos($file,'sources/views/'))
             {
-                if (!(file_exists("resources/views/".$this->name)))
+                if (!(File::exists("resources/views/".$this->name)))
                 {
                     mkdir("resources/views/".$this->name);
                 }
             }
-                
-            if ($handle = fopen($file,$type))
-            {
-                if (fwrite($handle,$newContent))
-                {
-                    if (fclose($handle))
-                    {
-                        $this->info("Added Content to ".$file);
-                    }
-                }
-            }
+            
+            if (File::put($file, $newContent))
+                $this->info("Added Content to ".$file);
             
         }            
     }
 
     protected function setVariables(){
-
+       
         // Template Engine Defintions
-        $this->templateEngine = env('TEMPLATE_ENGINE','bootstrap');
+        $this->templateEngine = Config::get('mvc.templateEngine');
         
         if ($this->option('foundation') !== false)
         {
@@ -193,7 +183,7 @@ class MVC extends Command
 
         if ( ($master  ==  "false") || ($master   ==  false) )
         {
-            $master  =   $this->name.".master";
+            $master  =   Config::get('mvc.templateMaster');;
         }
 
         $this->master     =   $master;
@@ -218,7 +208,7 @@ class MVC extends Command
             {
                 $index=str_replace('::Name',ucfirst($this->name),str_replace('::name',$this->name,$key));
                 
-                if ( (file_exists($index)) && ($this->reset !== 'Yes to all') )
+                if ( (File::exists($index)) && ($this->reset !== 'Yes to all') )
                 {
                     $this->error ("File ".$index." already exists!");
                     $this->reset= $this->choice("Overwrite ?",['No','Yes','No to all','Yes to all'],0);
@@ -234,7 +224,7 @@ class MVC extends Command
             }
         }
         
-        // Private Definition, can be accessedby owner only
+        // Private Definition, can be accessed by owner only
 
         $private           =   $this->option('private');
 
@@ -243,8 +233,41 @@ class MVC extends Command
             $private    = "null";
         }
 
-        $this->private  =   $private;
+        $this->private      =   $private;
 
+        // Migration,test if if exists
+        $this->migration    =  true;
+
+        $migrations         =   File::files('database/migrations');        
+
+        foreach ($migrations as $key => $value) 
+        {
+            if (strpos($value,'create_'.$this->table."_table"))
+            {
+                $this->migration =  false;
+                break;
+            }
+        }
     }
 
+    protected function checkFiles(){
+                     
+        //   Config
+        if (!(File::exists(config_path().'/mvc.php')))
+        {
+            if (File::copy(__DIR__.'/config/mvc.php',config_path().'/mvc.php'))
+            {
+                $this->info('MVC config created.');
+                /*
+                $array  =   ['name'=>$this->argument('name')];
+            
+                foreach ($this->option() as $key => $value) 
+                {
+                    $array["--".$key] = $value;
+                }
+                \Artisan::call('make:mvc',$array);
+                */
+            }
+        }
+    }
 }
