@@ -63,7 +63,7 @@ class ::NameController extends Controller
             return response('Unauthorized.', 401);
         }
                             
-        return view('::name.index',compact('models'));
+        return view('::name.index',compact('models','allowed'));
     }
 
     /**
@@ -93,7 +93,7 @@ class ::NameController extends Controller
                 $model->$column='';
         }
         
-        return view('::name.create',compact('model'));
+        return view('::name.create',compact('model','allowed'));
     }
 
     /**
@@ -152,7 +152,7 @@ class ::NameController extends Controller
             return response('Unauthorized.', 401);
         }
 
-        return view('::name.show',compact('model'));   
+        return view('::name.show',compact('model','allowed'));   
 
     }
 
@@ -186,7 +186,7 @@ class ::NameController extends Controller
                     $model->$column=$model->$column;
         }
         
-        return view('::name.edit',compact('model'));   
+        return view('::name.edit',compact('model','allowed'));   
     }
 
     /**

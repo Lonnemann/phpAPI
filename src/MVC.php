@@ -9,7 +9,7 @@ class MVC extends Command
      *
      * @var string
      */
-    protected $signature = 'make:mvc {name} {--foundation} {--bootstrap} {--override} {--table=false} {--private} {--master}';
+    protected $signature = 'make:mvc {name} {--foundation} {--bootstrap} {--reset} {--table=false} {--private} {--master=false}';
 
     /**
      * The console command description.
@@ -19,7 +19,35 @@ class MVC extends Command
     protected $description = 'Creates a Model, a view, a migration and a controller and adds it to the routes.';
     
     /**
-     * Template Location definitions
+     * The name of the created model.
+     *
+     * @var string
+     */
+    protected $name;
+
+    /**
+     * The database table used for model and migration.
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * The master.blade file which the views extend.
+     *
+     * @var string
+     */
+    protected $master;
+    
+    /**
+     * Overwrite-Mode, defines if the templates are being rewritten
+     *
+     * @var string
+     */
+    protected $reset;
+    
+    /**
+     * The original Template Locations
      *
      * @var array ['output'=>'input']
      */
@@ -54,6 +82,74 @@ class MVC extends Command
 
     public function handle()
     {
+        $this->setVariables();
+        
+        //create migration // FILTER
+        
+        $this->call('make:migration' ,['name' => "create_".$this->table."_table",'--create' => $this->table]);
+
+
+        // write Templates
+        foreach ($this->rewriteFiles as $key => $value)
+        {   
+            $this->rewriteFile($this->name,$key,$value);
+        }
+        
+        //  Add a route to the Controller into the routes.php
+        if (file_exists('app/Http/routes.php'))
+        {
+            if (!(strpos(file_get_contents('app/Http/routes.php'),"Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller')")))
+            {
+                if ($handle=fopen('app/Http/routes.php','a+'))
+                {
+                    if (fwrite($handle,"\n"."Route::resource('/".strtolower($this->name)."','".ucfirst($this->name)."Controller');"))
+                    {
+                        if (fclose($handle))
+                        {
+                            $this->info("Added path to routes.php");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected function rewriteFile($name,$file,$template,$type = 'w')
+    {    
+        if (file_exists($template))
+        {    
+            
+            $newContent = file_get_contents(str_replace("::engine", $this->templateEngine, $template));  
+            $newContent = str_replace('::table',    $this->table,               $newContent);
+            $newContent = str_replace('::private',  $this->private,             $newContent);
+            $newContent = str_replace('::master',   $this->master,              $newContent);
+            $newContent = str_replace('::name',     strtolower($this->name),    $newContent);
+            $newContent = str_replace('::Name',     ucfirst($this->name),      $newContent);
+            
+            if (strpos($file,'sources/views/'))
+            {
+                if (!(file_exists("resources/views/".$this->name)))
+                {
+                    mkdir("resources/views/".$this->name);
+                }
+            }
+                
+            if ($handle = fopen($file,$type))
+            {
+                if (fwrite($handle,$newContent))
+                {
+                    if (fclose($handle))
+                    {
+                        $this->info("Added Content to ".$file);
+                    }
+                }
+            }
+            
+        }            
+    }
+
+    protected function setVariables(){
+
         // Template Engine Defintions
         $this->templateEngine = env('TEMPLATE_ENGINE','bootstrap');
         
@@ -67,89 +163,88 @@ class MVC extends Command
             $this->templateEngine ='bootstrap';
         }
 
-        // Name Definition
-        $name       =   strtolower($this->argument('name'));
         
+        // Name Definition
+        $name           =   $this->argument('name');
+
         if ($name === null)
         {
-            $name   =   strtolower($this->ask('Please define the name of the package'));
+            $name   =   $this->ask('Please define the name of the package');
+        }
+
+        $this->name     =   strtolower($name);
+
+
+        // Table Definition
+        
+        $table  =   $this->option('table');
+
+        if ( ($table  ==  "false") || ($table   ==  false) )
+        {
+            $table  =   $this->name."s";
+        }
+
+        $this->table     =   strtolower($table);
+
+
+        // Master.blade Definition
+
+        $master  =   $this->option('master');
+
+        if ( ($master  ==  "false") || ($master   ==  false) )
+        {
+            $master  =   $this->name.".master";
+        }
+
+        $this->master     =   $master;
+
+        
+        // Reset Definition, defines if the templates are being rewritten
+
+        $reset           =   $this->option('reset');
+
+        if ($reset === true)
+        {
+            $this->reset    ="Yes to all";
         }
         
-        if ($this->option('table')  ==  "false")
-        {
-            //Create Model and Migraion
-            $this->call('make:model',['name' => ucfirst($name),'-m' => true]);
-        }
-        else
-        {
-                $this->info($this->option('table'));   
-                $this->call('make:model'     ,['name' => ucfirst($name)]);
-                $this->call('make:migration' ,['name' => "create_".strtolower($this->option('table'))."_table",'--create' => strtolower($this->option('table'))]);
-        }
-        //Create a RESTfulController
-        $this->call('make:controller',['name' => ucfirst($name).'Controller']);
+        $rewriteFiles       =   $this->rewriteFiles;
+        $this->rewriteFiles =   [];
 
-        // write Templates
-        foreach ($this->rewriteFiles as $key => $value)
+        foreach ($rewriteFiles as $key => $value)
         {
-            $this->rewriteFile($name,$key,$value);
-        }
-        
-        //  Add a route to the Controller into the routes.php
-        if (file_exists('app/Http/routes.php'))
-        {
-            if (!(strpos(file_get_contents('app/Http/routes.php'),"Route::resource('/".strtolower($name)."','".ucfirst($name)."Controller')")))
+            
+            if ($this->reset !== 'No to all')
             {
-                if ($handle=fopen('app/Http/routes.php','a+'))
-                {
-                    if (fwrite($handle,"\n"."Route::resource('/".strtolower($name)."','".ucfirst($name)."Controller');"))
-                    {
-                        if (fclose($handle))
-                        {
-                            $this->info("Added path to routes.php");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    protected function rewriteFile($name,$file,$template,$type = 'w')
-    {
-        if (file_exists(str_replace("::engine", $this->templateEngine, $template)))
-        {    
-            $file = str_replace('::name',strtolower($name),$file);
-            $file = str_replace('::Name',ucfirst($name),$file);
-
-            $newContent = file_get_contents(str_replace("::engine", $this->templateEngine, $template));  
-            $newContent = str_replace('::table',strtolower( ($this->option('table') !=="false") ? ($this->option('table')) : ('::names')),$newContent);
-            $newContent = str_replace('::private',strtolower( ($this->option('private') !==false) ? ('true') : ('false')),$newContent);
-            $newContent = str_replace('::master',strtolower( ($this->option('master') !==false) ? ($this->option('master')) : ('::name')),$newContent);
-            $newContent = str_replace('::name',strtolower($name),$newContent);
-            $newContent = str_replace('::Name',ucfirst($name),$newContent);
-
-            if (strpos($file,'sources/views/'))
-            {
-                if (!(file_exists("resources/views/$name")))
-                {
-                    mkdir("resources/views/$name");
-                }
-            }
+                $index=str_replace('::Name',ucfirst($this->name),str_replace('::name',$this->name,$key));
                 
-            if ((!(file_exists("resources/views/$name")))||($this->option('override') !== false))
-            {    
-                if ($handle = fopen($file,$type))
+                if ( (file_exists($index)) && ($this->reset !== 'Yes to all') )
                 {
-                    if (fwrite($handle,$newContent))
+                    $this->error ("File ".$index." already exists!");
+                    $this->reset= $this->choice("Overwrite ?",['No','Yes','No to all','Yes to all'],0);
+                    if (( $this->reset  !==  "No")  &&  ( $this->reset  !==  "No to all"))
                     {
-                        if (fclose($handle))
-                        {
-                            $this->info("Added Content to ".$file);
-                        }
+                        $this->rewriteFiles[$index] = str_replace('::engine',$this->templateEngine,$value);
                     }
                 }
+                else
+                {
+                    $this->rewriteFiles[$index] = str_replace('::engine',$this->templateEngine,$value);   
+                }
             }
-        }            
+        }
+        
+        // Private Definition, can be accessedby owner only
+
+        $private           =   $this->option('private');
+
+        if ($private !== true)
+        {
+            $private    = "null";
+        }
+
+        $this->private  =   $private;
+
     }
 
 }
